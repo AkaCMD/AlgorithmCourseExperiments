@@ -6,7 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <ctime>
-#include <windows.h>
+#include <chrono>
 
 class PercolationStats
 {
@@ -92,27 +92,30 @@ class PercolationStats
 int main()
 {
     int N, T;
-    DWORD start_time, end_time;
+    std::chrono::system_clock::time_point start_time, end_time;
+    std::cout << "Please enter N and T(T independent computational experiments on an N × N grid):" << std::endl;
     std::cin >> N >> T;
     std::cout << "Example values after creating PercolationStats(" << N << "," << T << ")" << std::endl;
     
     // QuickFind 
     std::cout << "------------------------------------------------------" << std::endl;
     std::cout << "QuickFind" << std::endl;
-    start_time = GetTickCount();
+    start_time = std::chrono::system_clock::now();
     PercolationStats percolation_stats_QF(N, T, true);
-    end_time = GetTickCount();
+    end_time = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     percolation_stats_QF.Print();
-    std::cout << "runtime:\t\t" << end_time - start_time << " ms" << std::endl;
+    std::cout << "runtime:\t\t" << double(duration.count())/1000.0f << " ms" << std::endl;
     std::cout << "------------------------------------------------------" << std::endl;
 
     // WeightedQuickUnion 
     std::cout << "WeightedQuickUnion" << std::endl;
-    start_time = GetTickCount();
+    start_time = std::chrono::system_clock::now();
     PercolationStats percolation_stats_WQU(N, T, false);
-    end_time = GetTickCount();
+    end_time = std::chrono::system_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     percolation_stats_WQU.Print();
-    std::cout << "runtime:\t\t" << end_time - start_time << " ms" << std::endl;
+    std::cout << "runtime:\t\t" << double(duration.count())/1000.0f << " ms" << std::endl;
     std::cout << "------------------------------------------------------" << std::endl;
     return 0;
 }
