@@ -8,6 +8,7 @@
 
 double times[5][10];
 std::vector<double> average_times(5);
+std::chrono::system_clock::time_point start_time, end_time;
 
 class Experiments
 {
@@ -89,12 +90,22 @@ public:
             average_times[i] = sum/10.0f;
         }
     }
+    static void start_timer()
+    {
+        start_time = std::chrono::system_clock::now();
+    }
+    static void end_timer()
+    {
+        end_time = std::chrono::system_clock::now();
+    }
+    static double get_elasped_time()
+    {
+        return double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+    }
 };
 
 int main()
 {
-    std::chrono::system_clock::time_point start_time, end_time;
-
     std::vector<int> data_set;
     std::vector<int> temp_data_set;
     int count;  // amount of test data
@@ -106,36 +117,36 @@ int main()
     for(int i = 0; i < 10; i++)
     {
         temp_data_set = data_set;
-        start_time = std::chrono::system_clock::now();
+        Experiments::start_timer();
         InsertionSort::sort(temp_data_set);
-        end_time = std::chrono::system_clock::now();
-        times[0][i] = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+        Experiments::end_timer();
+        times[0][i] = Experiments::get_elasped_time();
 
         temp_data_set = data_set;
-        start_time = std::chrono::system_clock::now();
+        Experiments::start_timer();
         TopDownMergeSort TDMsort;
         TDMsort.sort(temp_data_set);
-        end_time = std::chrono::system_clock::now();
-        times[1][i] = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+        Experiments::end_timer();
+        times[1][i] = Experiments::get_elasped_time();
 
         temp_data_set = data_set;
-        start_time = std::chrono::system_clock::now();
+        Experiments::start_timer();
         ButtomUpMergeSort BUMsort;
         BUMsort.sort(temp_data_set);
-        end_time = std::chrono::system_clock::now();
-        times[2][i] = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+        Experiments::end_timer();
+        times[2][i] = Experiments::get_elasped_time();
 
         temp_data_set = data_set;
-        start_time = std::chrono::system_clock::now();
+        Experiments::start_timer();
         RandomQuickSort::sort(temp_data_set);
-        end_time = std::chrono::system_clock::now();
-        times[3][i] = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+        Experiments::end_timer();
+        times[3][i] = Experiments::get_elasped_time();
 
         temp_data_set = data_set;
-        start_time = std::chrono::system_clock::now();
+        Experiments::start_timer();
         ThreeWayQuickSort::sort(temp_data_set);
-        end_time = std::chrono::system_clock::now();
-        times[4][i] = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+        Experiments::end_timer();
+        times[4][i] = Experiments::get_elasped_time();
     }
     std::cout << std::endl << "sorted:" << std::endl;
     Experiments::show(temp_data_set);
