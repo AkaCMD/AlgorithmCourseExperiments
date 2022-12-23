@@ -3,7 +3,35 @@
 #include <fstream>
 #include <cmath>
 #include <stack>
+#include <chrono>
 #define INF 100000
+
+std::vector<std::vector<int>> nodes;
+int vertex_count, edge_count;
+int v, x, y, w;
+int src, dest;
+std::vector<std::vector<double>> edges;
+std::ifstream infile("usa.txt");
+std::ifstream testfile("usa-100long.txt");
+EdgeWeightedGraph *graph;
+std::chrono::system_clock::time_point start_time, end_time;
+
+double distance(int v, int w)
+{
+    return std::sqrt(std::pow((nodes[v][0]-nodes[w][0]), 2) + std::pow((nodes[v][1]-nodes[w][1]), 2));
+}
+static void start_timer()
+{
+    start_time = std::chrono::system_clock::now();
+}
+static void end_timer()
+{
+    end_time = std::chrono::system_clock::now();
+}
+static double get_elasped_time()
+{
+    return double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count())/1000.0f;
+}
 
 class Djikstra_modified
 {
@@ -39,7 +67,7 @@ public:
         while (!pq->empty())
         {
             int v = pq->pop();
-            if(v == dest)   return;// Optimization_1: when the destination is discovered, stop relaxing
+            if(v == dest)   return;// Optimization: when the destination is discovered, stop relaxing
             for (Edge e : graph->get_edges(v))
             {
                 relax(e, v);
@@ -50,15 +78,27 @@ public:
     void relax(Edge &e, int v)
     {
         int w = e.to;
-        if (dist_to[w] > dist_to[v] + e.weight)
+        //------------ A*(Optimization)------------
+        double new_dist = dist_to[v] - distance(v, dest) + e.weight + distance(w, dest);// f = g + h
+        if(dist_to[w] > new_dist)
         {
-            dist_to[w] = dist_to[v] + e.weight;
+            dist_to[w] = new_dist;
             edge_to[w] = e.from;
-            if (pq->contain(w))
+            if(pq->contain(w))
                 pq->update(w, dist_to[w]);
             else
                 pq->insert(w, dist_to[w]);
         }
+        //------------ djikstra ------------
+        // if (dist_to[w] > dist_to[v] + e.weight)
+        // {
+        //     dist_to[w] = dist_to[v] + e.weight;
+        //     edge_to[w] = e.from;
+        //     if (pq->contain(w))
+        //         pq->update(w, dist_to[w]);
+        //     else
+        //         pq->insert(w, dist_to[w]);
+        // }
     }
 
     void get_path()
@@ -91,18 +131,6 @@ public:
     }
 };
 //-------------------------------main-------------------------------
-std::vector<std::vector<int>> nodes;
-int vertex_count, edge_count;
-int v, x, y, w;
-int src, dest;
-std::vector<std::vector<double>> edges;
-std::ifstream infile("usa.txt");
-EdgeWeightedGraph *graph;
-
-double distance(int v, int w)
-{
-    return std::sqrt(std::pow((nodes[v][0]-nodes[w][0]), 2) + std::pow((nodes[v][1]-nodes[w][1]), 2));
-}
 
 void init_graph()
 {
@@ -134,24 +162,26 @@ void init_graph()
 
 int main()
 {
+    double total_time = 0;
     // Read file
     infile >> vertex_count >> edge_count;
 
     init_graph();
+    
+    // Test usa-100long
+    for(int i=0; i<100; i++)
+    {
+        testfile >> src >> dest;
+        start_timer();
+        Djikstra_modified route(graph, src, dest);
+        end_timer();
+        total_time += get_elasped_time();
+        std::cout << "from " << src << " to " << dest << ":" << std::endl;
+        route.get_path();
+        std::cout << std::endl << "-----------------------------------------------------------------------" << std::endl;
+    }
 
-    // Input src && dest
-    std::cout << "Please enter the source and the destination(src dest):" << std::endl;
-    std::cin >> src >> dest;
-
-    // Calculate the route
-    Djikstra_modified route(graph, src, dest);
-
-    // Print path
-    route.get_path();
-    std::cout << std::endl;
-
-    // Print distance
-    double total_dist = route.total_distance();
-    std::cout << "distance: " << total_dist;
+    // Print running time
+    std::cout << "running time: " << total_time << "ms" << std::endl;
     return 0;
 }
